@@ -28,11 +28,13 @@ hydrateRoot(document, <RemixBrowser />);`,
     ),
     entryServer: Prism.highlight(
       `import { PassThrough } from "stream";
-import { renderToPipeableStream, renderToString } from "react-dom/server";
+import { renderToPipeableStream } from "react-dom/server";
 import { RemixServer } from "remix";
 import type { EntryContext } from "remix";
 import { Response, Headers } from "@remix-run/node";
 import isbot from "isbot";
+
+const ABORT_DELAY = 5000;
 
 export default function handleRequest(
   request: Request,
@@ -40,32 +42,17 @@ export default function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  if (isbot(request.headers.get("user-agent"))) {
-    return renderForBot(
-      request,
-      responseStatusCode,
-      responseHeaders,
-      remixContext
-    );
-  }
+  let callbackName = isbot(request.headers.get("user-agent"))
+    ? "onAllReady"
+    : "onShellReady";
 
-  return render(request, responseStatusCode, responseHeaders, remixContext);
-}
-
-const ABORT_DELAY = 5000;
-
-function render(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext
-) {
   return new Promise((resolve) => {
     let didError = false;
+
     const { pipe, abort } = renderToPipeableStream(
       <RemixServer context={remixContext} url={request.url} />,
       {
-        onShellReady() {
+        [callbackName]() {
           let body = new PassThrough();
 
           responseHeaders.set("Content-Type", "text/html");
@@ -85,24 +72,6 @@ function render(
       }
     );
     setTimeout(abort, ABORT_DELAY);
-  });
-}
-
-function renderForBot(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext
-) {
-  let markup = renderToString(
-    <RemixServer context={remixContext} url={request.url} />
-  );
-
-  responseHeaders.set("Content-Type", "text/html");
-
-  return new Response("<!DOCTYPE html>" + markup, {
-    status: responseStatusCode,
-    headers: responseHeaders,
   });
 }`,
       Prism.languages.js,
