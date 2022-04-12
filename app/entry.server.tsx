@@ -18,7 +18,7 @@ export default function handleRequest(
     ? "onAllReady"
     : "onShellReady";
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let didError = false;
 
     const { pipe, abort } = renderToPipeableStream(
@@ -36,6 +36,9 @@ export default function handleRequest(
             })
           );
           pipe(body);
+        },
+        onShellError(err: Error) {
+          reject(err);
         },
         onError(error: Error) {
           didError = true;
