@@ -16,14 +16,25 @@ app.disable("x-powered-by");
 
 app.use(
   compression({
-    filter: (req) => {
-      // disable compression for document requests to allow chunked streaming
+    filter: (req, res) => {
+      let contentTypeHeader = res.getHeader("Content-Type");
+      let contentType = "";
+      if (typeof contentTypeHeader === "string") {
+        contentType = contentTypeHeader;
+      } else if (typeof contentTypeHeader === "number") {
+        contentType = String(contentTypeHeader);
+      } else if (contentTypeHeader) {
+        contentType = contentTypeHeader.join("; ");
+      }
+
       if (
-        req.headers["accept"] &&
-        req.headers["accept"].indexOf("text/html") !== -1
+        noCompressContentTypes &&
+        noCompressContentTypes.some((regex) => regex.test(contentType))
       ) {
         return false;
       }
+
+      return true;
     },
   })
 );
