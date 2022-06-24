@@ -1,8 +1,7 @@
 import { PassThrough } from "stream";
-// @ts-expect-error
 import { renderToPipeableStream } from "react-dom/server";
-import { RemixServer } from "remix";
-import type { EntryContext } from "remix";
+import { RemixServer } from "@remix-run/react";
+import type { EntryContext } from "@remix-run/node";
 import { Response, Headers } from "@remix-run/node";
 import isbot from "isbot";
 
@@ -37,10 +36,10 @@ export default function handleRequest(
           );
           pipe(body);
         },
-        onShellError(err: Error) {
+        onShellError(err) {
           reject(err);
         },
-        onError(error: Error) {
+        onError(error) {
           didError = true;
           console.error(error);
         },

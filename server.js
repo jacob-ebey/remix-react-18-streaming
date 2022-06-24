@@ -2,6 +2,10 @@ const express = require("express");
 const compression = require("compression");
 const morgan = require("morgan");
 const { createRequestHandler } = require("@remix-run/express");
+const { createRoutes } = require("@remix-run/server-runtime/routes");
+const {
+  matchServerRoutes,
+} = require("@remix-run/server-runtime/routeMatching");
 
 const buildPath = "./build";
 
@@ -38,19 +42,25 @@ app.use(morgan("tiny"));
 
 app.all(
   "*",
-  process.env.NODE_ENV === "development"
-    ? (req, res, next) => {
-        purgeRequireCache(buildPath);
+  ...(process.env.NODE_ENV === "development"
+    ? [
+        (req, res, next) => {
+          purgeRequireCache(buildPath);
 
-        return createRequestHandler({
+          remixEarlyHints(require(buildPath))(req, res);
+          return createRequestHandler({
+            build: require(buildPath),
+            mode: process.env.NODE_ENV,
+          })(req, res, next);
+        },
+      ]
+    : [
+        remixEarlyHints(require(buildPath)),
+        createRequestHandler({
           build: require(buildPath),
           mode: process.env.NODE_ENV,
-        })(req, res, next);
-      }
-    : createRequestHandler({
-        build: require(buildPath),
-        mode: process.env.NODE_ENV,
-      })
+        }),
+      ])
 );
 const port = process.env.PORT || 3000;
 
@@ -60,4 +70,38 @@ app.listen(port, () => {
 
 function purgeRequireCache(path) {
   delete require.cache[require.resolve(path)];
+}
+
+function remixEarlyHints(build) {
+  function getRel(resource) {
+    if (resource.endsWith(".js")) {
+      return "modulepreload";
+    }
+    return "preload";
+  }
+
+  const routes = createRoutes(build.routes);
+
+  return (req, res, next) => {
+    const matches = matchServerRoutes(routes, req.path);
+
+    let resources =
+      matches &&
+      matches.flatMap((match) => [
+        build.assets.routes[match.route.id].module,
+        ...(build.assets.routes[match.route.id].imports || []),
+      ]);
+
+    if (resources && resources.length > 0) {
+      res.connection.write("HTTP/1.1 103 Early Hints\r\n");
+      for (const resource of resources) {
+        res.connection.write(
+          `Link: <${resource}>; rel=${getRel(resource)}\r\n`
+        );
+      }
+      res.connection.write("\r\n");
+    }
+
+    if (next) next();
+  };
 }

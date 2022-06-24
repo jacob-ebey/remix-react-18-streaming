@@ -1,5 +1,6 @@
-import { json, Link, useLoaderData } from "remix";
-import type { LinksFunction, LoaderFunction } from "remix";
+import { json } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 
 import Prism from "prismjs";
 import darkThemeStylesHref from "prismjs/themes/prism-tomorrow.min.css";
@@ -20,7 +21,7 @@ export let loader: LoaderFunction = () => {
     ),
     entryClient: Prism.highlight(
       `import { hydrateRoot } from "react-dom/client";
-import { RemixBrowser } from "remix";
+import { RemixBrowser } from "@remix-run/react";
 
 hydrateRoot(document, <RemixBrowser />);`,
       Prism.languages.js,
@@ -29,8 +30,8 @@ hydrateRoot(document, <RemixBrowser />);`,
     entryServer: Prism.highlight(
       `import { PassThrough } from "stream";
 import { renderToPipeableStream } from "react-dom/server";
-import { RemixServer } from "remix";
-import type { EntryContext } from "remix";
+import { RemixServer } from "@remix-run/react";
+import type { EntryContext } from "@remix-run/node";
 import { Response, Headers } from "@remix-run/node";
 import isbot from "isbot";
 
@@ -65,10 +66,10 @@ export default function handleRequest(
           );
           pipe(body);
         },
-        onShellError(err: Error) {
+        onShellError(err) {
           reject(err);
         },
-        onError(error: Error) {
+        onError(error) {
           didError = true;
           console.error(error);
         },

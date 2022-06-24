@@ -1,3 +1,4 @@
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import {
   Link,
   Links,
@@ -6,8 +7,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "remix";
-import type { LinksFunction, MetaFunction } from "remix";
+} from "@remix-run/react";
 
 import picoStyleHref from "@picocss/pico/css/pico.min.css";
 
