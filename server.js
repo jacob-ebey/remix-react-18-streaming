@@ -11,6 +11,12 @@ const buildPath = "./build";
 
 const app = express();
 
+const noCompressContentTypes = [
+  /text\/html/,
+  /text\/remix-deferred/,
+  /text\/event-stream/,
+];
+
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable("x-powered-by");
 
