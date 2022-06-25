@@ -91,9 +91,9 @@ function purgeRequireCache(path) {
 
 function remixEarlyHints(build) {
   function getRel(resource) {
-    // if (resource.endsWith(".js")) {
-    //   return "modulepreload";
-    // }
+    if (resource.endsWith(".js")) {
+      return "modulepreload";
+    }
     return "preload";
   }
 
