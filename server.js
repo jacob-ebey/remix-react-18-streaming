@@ -91,9 +91,9 @@ function purgeRequireCache(path) {
 
 function remixEarlyHints(build) {
   function getRel(resource) {
-    if (resource.endsWith(".js")) {
-      return "modulepreload";
-    }
+    // if (resource.endsWith(".js")) {
+    //   return "modulepreload";
+    // }
     return "preload";
   }
 
@@ -113,7 +113,7 @@ function remixEarlyHints(build) {
       res.connection.write("HTTP/1.1 103 Early Hints\r\n");
       for (const resource of resources) {
         res.connection.write(
-          `Link: <${resource}>; rel=${getRel(resource)}\r\n`
+          `Link: <${resource}>; rel=${getRel(resource)};\r\n`
         );
       }
       res.connection.write("\r\n");
