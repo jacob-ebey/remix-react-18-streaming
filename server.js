@@ -99,6 +99,12 @@ function remixEarlyHints(build) {
 
   const routes = createRoutes(build.routes);
 
+  /**
+   *
+   * @param {*} req
+   * @param {import("express").Response} res
+   * @param {*} next
+   */
   return (req, res, next) => {
     const matches = matchServerRoutes(routes, req.path);
 
@@ -110,10 +116,10 @@ function remixEarlyHints(build) {
       ]);
 
     if (resources && resources.length > 0) {
-      res.connection.write("HTTP/1.1 103 Early Hints\r\n");
+      res.connection.write("HTTP/2 103\r\n");
       for (const resource of resources) {
         res.connection.write(
-          `Link: <${resource}>; rel=${getRel(resource)};\r\n`
+          `Link: <${resource}>; rel=${getRel(resource)}\r\n`
         );
       }
       res.connection.write("\r\n");

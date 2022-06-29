@@ -1,5 +1,10 @@
 import { Link } from "@remix-run/react";
 
+export let loader = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return null;
+};
+
 export default function Index() {
   return (
     <main className="container">

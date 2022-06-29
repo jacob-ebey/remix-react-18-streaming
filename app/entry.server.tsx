@@ -27,6 +27,8 @@ export default function handleRequest(
           let body = new PassThrough();
 
           responseHeaders.set("Content-Type", "text/html");
+          responseHeaders.set("Transfer-Encoding", "chunked");
+          responseHeaders.set("Connection", "keep-alive");
 
           resolve(
             new Response(body, {
